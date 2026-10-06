@@ -21,6 +21,11 @@
     const r = [...state.rings].sort().join(',');
     const q = new URLSearchParams({ p: state.planetId, b: String(state.bpm), o });
     if (r) q.set('r', r);
+    if (typeof Mixer !== 'undefined' && state.mixerReady) {
+      const mx = Mixer.encode();
+      if (mx.m) q.set('m', mx.m);
+      if (mx.x) q.set('x', mx.x);
+    }
     return '#' + q.toString();
   }
 
@@ -33,10 +38,14 @@
     if (o) out.grid = o.split('.').map(row => [...Array(STEPS).keys()].map(i => { const c = row[i]; return (!c || c === '-') ? -1 : parseInt(c, 36); }));
     const r = q.get('r');
     if (r) out.rings = r.split(',').map(x => parseInt(x, 10)).filter(x => !isNaN(x));
+    out.m = q.get('m') || ''; out.x = q.get('x') || '';
     return out;
   }
 
-  function syncHash() { history.replaceState(null, '', encode()); }
+  function syncHash() { clearTimeout(hashTimer); history.replaceState(null, '', encode()); }
+  // Safari ограничивает частоту replaceState, поэтому при движении ползунков пишем с задержкой.
+  let hashTimer = null;
+  function syncHashSoon() { clearTimeout(hashTimer); hashTimer = setTimeout(syncHash, 350); }
 
   // ---------- Сетка ----------
   function ensureGrid(n) {
@@ -81,7 +90,8 @@
     AudioEngine.setRing(i, on);
     Scene.setRing(i, on);
     const chip = document.querySelector(`#rings .chip[data-i="${i}"]`);
-    if (chip) chip.classList.toggle('active', on);
+    if (chip) { chip.classList.toggle('active', on); chip.setAttribute('aria-pressed', String(on)); }
+    if (typeof Mixer !== 'undefined' && state.mixerReady) Mixer.render();
     syncHash();
   }
 
@@ -131,9 +141,10 @@
   }
 
   function setPlaying(on) {
+    if (on && Tone.context.state !== 'running') { try { Tone.start(); } catch (e) { /* пусто */ } }
     if (on) AudioEngine.start(); else AudioEngine.stop();
     Scene.setPlaying(on);
-    $('play-btn').textContent = on ? '■' : '▶';
+    $('play-btn').classList.toggle('on', on);
     $('play-btn').setAttribute('aria-label', on ? 'Стоп' : 'Играть');
     if (!on) Scene.setProgress(0);
   }
@@ -148,6 +159,22 @@
       b.addEventListener('click', () => { $('picker').classList.add('hidden'); loadPlanet(p.id, null); });
       list.appendChild(b);
     });
+  }
+
+  function fillRange(el) {
+    el.style.setProperty('--val', ((el.value - el.min) / (el.max - el.min) * 100).toFixed(1) + '%');
+  }
+
+  function bindTabs() {
+    const tabs = [...document.querySelectorAll('.tab')];
+    const ind = document.querySelector('.tab-ind');
+    tabs.forEach((t, idx) => t.addEventListener('click', () => {
+      tabs.forEach(x => { x.classList.toggle('on', x === t); x.setAttribute('aria-selected', String(x === t)); });
+      document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.dataset.pane === t.dataset.tab));
+      ind.style.transform = `translateX(${idx * 100}%)`;
+      if (t.dataset.tab === 'mixer') Mixer.render();
+      if (t.dataset.tab === 'master') Mixer.renderMaster();
+    }));
   }
 
   // ---------- Загрузка планеты ----------
@@ -178,8 +205,9 @@
     Scene.setOrbitCount(state.orbits);
     redrawSatellites();
     $('orbit-count').textContent = state.orbits;
-    $('bpm').value = state.bpm; $('bpm-label').textContent = state.bpm;
+    $('bpm').value = state.bpm; $('bpm-label').textContent = state.bpm; fillRange($('bpm'));
     buildPlanetList();
+    state.mixerReady = false;
 
     $('load-status').textContent = 'загрузка…';
     hint('Загружаю звуки…', 60000);
@@ -188,6 +216,9 @@
     hint('Звуки готовы', 1200);
     AudioEngine.setBpm(state.bpm);
     for (const i of state.rings) { AudioEngine.setRing(i, true); Scene.setRing(i, true); }
+    Mixer.apply(fromHash && fromHash.m, fromHash && fromHash.x);
+    Mixer.setPlanet(p, { onChange: syncHashSoon, onRingToggle: toggleRing, ringState: (i) => state.rings.has(i) });
+    state.mixerReady = true;
     document.querySelectorAll('#rings .chip').forEach(c => c.classList.toggle('active', state.rings.has(+c.dataset.i)));
     syncHash();
     if (wasPlaying) setPlaying(true);
@@ -280,11 +311,35 @@
   async function boot() {
     const wantEdit = location.hash === '#edit';
     Scene.init($('scene'));
-    Scene.setBottomPad(document.querySelector('.panel').offsetHeight);
-    window.addEventListener('resize', () => Scene.setBottomPad(document.querySelector('.panel').offsetHeight));
+    const dock = document.querySelector('.dock');
+    const padNow = () => Scene.setBottomPad(window.innerHeight - dock.getBoundingClientRect().top);
+    padNow();
+    window.addEventListener('resize', padNow);
+    if (window.ResizeObserver) new ResizeObserver(padNow).observe(dock);
+    bindTabs();
+    // Кнопка старта работает сразу, ещё до загрузки семплов. Окно закрывается синхронно,
+    // разблокировка звука идёт в фоне и не может его задержать.
+    const startOverlay = () => {
+      $('start').classList.add('hidden');
+      AudioEngine.unlock();
+      hint('Нажми на планету, чтобы запустить', 2500);
+    };
+    $('start-btn').addEventListener('click', startOverlay);
+    $('start').addEventListener('click', (e) => { if (e.target === $('start')) startOverlay(); });
+    // Если звук всё-таки не проснулся (Safari), будим его при следующем нажатии в любом месте.
+    document.addEventListener('pointerdown', () => {
+      if (Tone.context.state !== 'running') { try { Tone.start(); } catch (e) { /* пусто */ } }
+    }, { capture: true });
     AudioEngine.setGrid(hitsAt);
     AudioEngine.setOnStep((step, hits) => { for (const h of hits) Scene.flash(h.orbit, h.step); });
-    (function tick() { Scene.setProgress(AudioEngine.progress()); requestAnimationFrame(tick); })();
+    (function tick() {
+      Scene.setProgress(AudioEngine.progress());
+      if (state.planet && AudioEngine.isPlaying()) {
+        for (const i of state.rings) Scene.setRingLevel(i, AudioEngine.level('r' + i));
+        Scene.setEnergy(AudioEngine.masterLevel());
+      } else Scene.setEnergy(0);
+      requestAnimationFrame(tick);
+    })();
 
     const idx = await (await fetch('planets/index.json')).json();
     planetsIndex = idx.planets;
@@ -295,11 +350,6 @@
     const id = (fromHash && planetsIndex.some(p => p.id === fromHash.planetId)) ? fromHash.planetId : planetsIndex[0].id;
     await loadPlanet(id, fromHash);
 
-    $('start-btn').addEventListener('click', async () => {
-      await AudioEngine.unlock();
-      $('start').classList.add('hidden');
-      hint('Нажми на планету, чтобы запустить', 2500);
-    });
     $('play-btn').addEventListener('click', () => setPlaying(!AudioEngine.isPlaying()));
     $('orbit-plus').addEventListener('click', () => setOrbits(state.orbits + 1));
     $('orbit-minus').addEventListener('click', () => setOrbits(state.orbits - 1));
@@ -309,7 +359,7 @@
       syncHash();
     });
     $('bpm').addEventListener('input', (e) => {
-      state.bpm = +e.target.value; $('bpm-label').textContent = state.bpm; AudioEngine.setBpm(state.bpm);
+      state.bpm = +e.target.value; $('bpm-label').textContent = state.bpm; AudioEngine.setBpm(state.bpm); fillRange(e.target);
     });
     $('bpm').addEventListener('change', () => { AudioEngine.resyncRings(); syncHash(); });
     $('planet-btn').addEventListener('click', () => { buildPlanetList(); $('picker').classList.remove('hidden'); });
@@ -321,7 +371,7 @@
       if (navigator.share) { try { await navigator.share({ title: state.planet.name, url }); return; } catch (e) { /* отмена */ } }
       try { await navigator.clipboard.writeText(url); hint('Ссылка скопирована'); } catch (e) { $('share-url').select(); }
     });
-    $('editor-open').addEventListener('click', () => { $('picker').classList.add('hidden'); if (window.Editor) Editor.open(); });
+    $('editor-open').addEventListener('click', () => { $('picker').classList.add('hidden'); if (typeof Editor !== 'undefined') Editor.open(); });
     document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => $(b.dataset.close).classList.add('hidden')));
     bindPointer();
     window.Orbital = {
@@ -329,7 +379,7 @@
       current: () => ({ cfg: state.planet, base: state.base }),
       hint, setPlaying, isReady: () => !$('start').classList.contains('hidden'),
     };
-    if (wantEdit && window.Editor) Editor.open();
+    if (wantEdit && typeof Editor !== 'undefined') Editor.open();
   }
 
   boot().catch(err => { console.error(err); $('load-status').textContent = 'ошибка: ' + err.message; });

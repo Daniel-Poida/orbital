@@ -19,6 +19,30 @@ const Scene = (() => {
   let colors = { accent: '#ff7a3d', orbit: '#8f7a6b', ray: '#ffffff' };
   let orbitCount = 3;
   let pulses = [];
+  let energy = 0;
+  let glowTex = null;
+  let planetHalo = null;
+  let rimLight = null;
+
+  // Мягкая радиальная текстура для свечений (рисуется один раз на canvas).
+  function makeGlowTexture() {
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const g = c.getContext('2d');
+    const grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grd.addColorStop(0, 'rgba(255,255,255,1)');
+    grd.addColorStop(0.25, 'rgba(255,255,255,.55)');
+    grd.addColorStop(0.6, 'rgba(255,255,255,.12)');
+    grd.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = grd; g.fillRect(0, 0, 128, 128);
+    const t = new THREE.CanvasTexture(c);
+    return t;
+  }
+
+  function glowSprite(color, size, opacity) {
+    const m = new THREE.SpriteMaterial({ map: glowTex, color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending });
+    const sp = new THREE.Sprite(m); sp.scale.setScalar(size);
+    return sp;
+  }
   let playing = false;
   let bottomPad = 0;
   const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -34,10 +58,14 @@ const Scene = (() => {
     raycaster = new THREE.Raycaster();
     pointer = new THREE.Vector2();
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-    const sun = new THREE.DirectionalLight(0xffffff, 0.9);
+    glowTex = makeGlowTexture();
+    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+    const sun = new THREE.DirectionalLight(0xffffff, 1.15);
     sun.position.set(-6, 8, 4);
     scene.add(sun);
+    rimLight = new THREE.DirectionalLight(0xff7a3d, 1.4);
+    rimLight.position.set(5, -2, -6);
+    scene.add(rimLight);
 
     planet = new THREE.Mesh(
       new THREE.SphereGeometry(1, 56, 56),
@@ -45,11 +73,20 @@ const Scene = (() => {
     );
     scene.add(planet);
 
+    // Атмосфера: френелевское свечение по краю шара.
     planetGlow = new THREE.Mesh(
-      new THREE.SphereGeometry(1.12, 40, 40),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.0, side: THREE.BackSide, depthWrite: false })
+      new THREE.SphereGeometry(1.16, 48, 48),
+      new THREE.ShaderMaterial({
+        uniforms: { color: { value: new THREE.Color(0xffffff) }, intensity: { value: 0.6 } },
+        vertexShader: 'varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }',
+        fragmentShader: 'uniform vec3 color; uniform float intensity; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1.0 - abs(dot(vN, vV)), 2.6); gl_FragColor = vec4(color, f * intensity); }',
+        transparent: true, blending: THREE.AdditiveBlending, side: THREE.BackSide, depthWrite: false,
+      })
     );
     scene.add(planetGlow);
+    planetHalo = glowSprite(0xffffff, 5.5, 0.18);
+    planetHalo.renderOrder = -1;
+    scene.add(planetHalo);
 
     orbitGroup = new THREE.Group();
     satGroup = new THREE.Group();
@@ -139,7 +176,9 @@ const Scene = (() => {
     } else {
       planet.material.map = null; planet.material.color.set(colors.accent); planet.material.needsUpdate = true;
     }
-    planetGlow.material.color.set(colors.accent);
+    planetGlow.material.uniforms.color.value.set(colors.accent);
+    planetHalo.material.color.set(colors.accent);
+    rimLight.color.set(colors.accent);
     rayLine.material.color.set(colors.ray);
     raySweep.material.color.set(colors.ray);
     for (const o of orbitObjs) { o.line.material.color.set(colors.orbit); o.pts.material.color.set(colors.orbit); }
@@ -154,13 +193,13 @@ const Scene = (() => {
     const pts = [];
     for (let k = 0; k <= 128; k++) { const a = k / 128 * Math.PI * 2; pts.push(new THREE.Vector3(Math.sin(a) * r, 0, -Math.cos(a) * r)); }
     const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
-      new THREE.LineBasicMaterial({ color: colors.orbit, transparent: true, opacity: 0.45 }));
+      new THREE.LineBasicMaterial({ color: colors.orbit, transparent: true, opacity: 0.32 }));
     const mpts = [];
     for (let s = 0; s < STEPS; s++) { const a = s / STEPS * Math.PI * 2; mpts.push(new THREE.Vector3(Math.sin(a) * r, 0, -Math.cos(a) * r)); }
     const geo = new THREE.BufferGeometry().setFromPoints(mpts);
-    const markers = new THREE.Points(geo, new THREE.PointsMaterial({ color: colors.orbit, size: 0.12, transparent: true, opacity: 0.8 }));
+    const markers = new THREE.Points(geo, new THREE.PointsMaterial({ color: colors.orbit, size: 0.1, transparent: true, opacity: 0.7, map: glowTex, depthWrite: false }));
     const beatPts = [0, 4, 8, 12].map(s => mpts[s]);
-    const beats = new THREE.Points(new THREE.BufferGeometry().setFromPoints(beatPts), new THREE.PointsMaterial({ color: 0xffffff, size: 0.2, transparent: true, opacity: 0.55 }));
+    const beats = new THREE.Points(new THREE.BufferGeometry().setFromPoints(beatPts), new THREE.PointsMaterial({ color: 0xffffff, size: 0.26, transparent: true, opacity: 0.6, map: glowTex, depthWrite: false, blending: THREE.AdditiveBlending }));
     const g = new THREE.Group(); g.add(line, markers, beats);
     orbitGroup.add(g);
     return { group: g, line, pts: markers };
@@ -184,10 +223,12 @@ const Scene = (() => {
     if (prev) { satGroup.remove(prev); satObjs.delete(key); }
     if (!sampleCfg) return;
     const a = s / STEPS * Math.PI * 2, r = orbitRadius(o);
-    const m = new THREE.Mesh(new THREE.SphereGeometry(0.21, 20, 20),
-      new THREE.MeshStandardMaterial({ color: sampleCfg.color, emissive: sampleCfg.color, emissiveIntensity: 0.35, roughness: 0.4 }));
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.2, 24, 24),
+      new THREE.MeshStandardMaterial({ color: sampleCfg.color, emissive: sampleCfg.color, emissiveIntensity: 0.45, roughness: 0.3, metalness: 0.1 }));
     m.position.set(Math.sin(a) * r, 0, -Math.cos(a) * r);
-    m.userData = { orbit: o, step: s, base: 1 };
+    const halo = glowSprite(sampleCfg.color, 1.1, 0.45);
+    m.add(halo);
+    m.userData = { orbit: o, step: s, base: 1, halo };
     satGroup.add(m);
     satObjs.set(key, m);
   }
@@ -198,7 +239,8 @@ const Scene = (() => {
     const m = satObjs.get(satKey(o, s));
     if (!m) return;
     m.scale.setScalar(1.7);
-    m.material.emissiveIntensity = 1.6;
+    m.material.emissiveIntensity = 1.8;
+    if (m.userData.halo) m.userData.halo.material.opacity = 1;
     pulses.push(m);
   }
 
@@ -211,9 +253,9 @@ const Scene = (() => {
     cfgs.forEach((cfg, i) => {
       const inner = RING_INNER + i * (ringWidth + ringGap);
       const mesh = new THREE.Mesh(new THREE.RingGeometry(inner, inner + ringWidth, 96),
-        new THREE.MeshBasicMaterial({ color: cfg.color, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false }));
+        new THREE.MeshBasicMaterial({ color: cfg.color, transparent: true, opacity: 0.1, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
       mesh.rotation.x = -Math.PI / 2;
-      mesh.userData = { ring: i, active: false };
+      mesh.userData = { ring: i, active: false, level: 0 };
       ringGroup.add(mesh);
       ringObjs.push({ mesh, cfg });
     });
@@ -237,7 +279,17 @@ const Scene = (() => {
   function setRing(i, active) {
     const r = ringObjs[i]; if (!r) return;
     r.mesh.userData.active = active;
-    r.mesh.material.opacity = active ? 0.78 : 0.16;
+    r.mesh.material.opacity = active ? 0.55 : 0.1;
+  }
+
+  // Уровень звука кольца 0..1, кольцо светится в такт своему инструменту.
+  function setRingLevel(i, lv) {
+    const r = ringObjs[i]; if (!r) return;
+    r.mesh.userData.level += (lv - r.mesh.userData.level) * 0.35;
+  }
+
+  function setEnergy(e) {
+    energy += (e - energy) * (e > energy ? 0.5 : 0.08);
   }
 
   function setPlaying(p) { playing = p; }
@@ -272,7 +324,16 @@ const Scene = (() => {
     const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t;
     planet.rotation.y += dt * (playing ? 0.35 : 0.08);
     stars.rotation.y += dt * 0.004;
-    planetGlow.material.opacity += ((playing ? 0.28 : 0.08) - planetGlow.material.opacity) * 0.08;
+    const u = planetGlow.material.uniforms.intensity;
+    u.value += ((playing ? 0.9 + energy * 1.4 : 0.55) - u.value) * 0.12;
+    planetHalo.material.opacity = 0.14 + energy * 0.3;
+    const ps = 1 + energy * 0.035; planet.scale.setScalar(ps); planetGlow.scale.setScalar(ps);
+    for (const ro of ringObjs) {
+      const d = ro.mesh.userData;
+      ro.mesh.material.opacity = d.active ? (playing ? 0.18 + d.level * 0.55 : 0.38) : 0.07;
+      if (!playing) d.level *= 0.9;
+    }
+    for (const m of satObjs.values()) if (m.userData.halo && m.userData.halo.material.opacity > 0.45) m.userData.halo.material.opacity += (0.45 - m.userData.halo.material.opacity) * 0.12;
     raySweep.material.opacity = playing ? 0.12 : 0.0;
     rayLine.material.opacity = playing ? 0.9 : 0.35;
     for (const ro of ringObjs) if (ro.mesh.userData.active && playing) ro.mesh.rotation.z += dt * 0.25;
@@ -285,5 +346,5 @@ const Scene = (() => {
     requestAnimationFrame(loop);
   }
 
-  return { init, setPlanet, setZoom, getZoom, panBy, resetView, setOrbitCount, setSatellite, clearSatellites, setRing, flash, setProgress, setPlaying, pick, setBottomPad, STEPS, MAX_ORBITS, MAX_RINGS };
+  return { init, setPlanet, setZoom, getZoom, panBy, resetView, setOrbitCount, setSatellite, clearSatellites, setRing, setRingLevel, setEnergy, flash, setProgress, setPlaying, pick, setBottomPad, STEPS, MAX_ORBITS, MAX_RINGS };
 })();
