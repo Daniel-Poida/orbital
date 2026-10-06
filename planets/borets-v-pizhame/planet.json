@@ -1,0 +1,121 @@
+{
+  "id": "borets-v-pizhame",
+  "name": "Борец в Пижаме",
+  "bpm": 118,
+  "trackUrl": "https://music.apple.com/ru/album/1517188643",
+  "texture": "planet.png",
+  "background": "bg.png",
+  "colors": {
+    "accent": "#ff5fd2",
+    "orbit": "#7a5f8f",
+    "ray": "#c9fff4",
+    "text": "#fff0fb"
+  },
+  "samples": [
+    {
+      "id": "bochka",
+      "name": "Бочка",
+      "file": "samples/d01-bochka.wav",
+      "color": "#ff5fd2"
+    },
+    {
+      "id": "sneyr",
+      "name": "Снейр",
+      "file": "samples/d02-sneyr.wav",
+      "color": "#ffe66d"
+    },
+    {
+      "id": "het",
+      "name": "Хэт",
+      "file": "samples/d03-het.wav",
+      "color": "#c9fff4"
+    },
+    {
+      "id": "rim",
+      "name": "Рим",
+      "file": "samples/d04-rim.wav",
+      "color": "#ffb3ec"
+    },
+    {
+      "id": "klep",
+      "name": "Клэп",
+      "file": "samples/d05-klep.wav",
+      "color": "#ffd9f5"
+    },
+    {
+      "id": "buben",
+      "name": "Бубен",
+      "file": "samples/d06-buben.wav",
+      "color": "#fff3a0"
+    },
+    {
+      "id": "gitara",
+      "name": "Гитара",
+      "file": "samples/d07-gitara.wav",
+      "color": "#5ff2ff"
+    },
+    {
+      "id": "sint-plak",
+      "name": "Синт-плак",
+      "file": "samples/d08-sint-plak.wav",
+      "color": "#9d7bff"
+    },
+    {
+      "id": "ou",
+      "name": "Оу",
+      "file": "samples/d09-ou.wav",
+      "color": "#ff8fe0"
+    },
+    {
+      "id": "revers",
+      "name": "Реверс",
+      "file": "samples/d10-revers.wav",
+      "color": "#b8b8ff"
+    }
+  ],
+  "rings": [
+    {
+      "id": "neon-pad",
+      "name": "Неон-пад",
+      "file": "samples/r01-neon-pad.wav",
+      "bars": 4,
+      "color": "#ff5fd2"
+    },
+    {
+      "id": "bas",
+      "name": "Бас",
+      "file": "samples/r02-bas.wav",
+      "bars": 4,
+      "color": "#9d7bff"
+    },
+    {
+      "id": "gitarnyy-arp",
+      "name": "Гитарный арп",
+      "file": "samples/r03-gitarnyy-arp.wav",
+      "bars": 4,
+      "color": "#5ff2ff"
+    },
+    {
+      "id": "ou-hor",
+      "name": "Оу-хор",
+      "file": "samples/r04-ou-hor.wav",
+      "bars": 4,
+      "color": "#ff8fe0"
+    },
+    {
+      "id": "klavishi",
+      "name": "Клавиши",
+      "file": "samples/r05-klavishi.wav",
+      "bars": 4,
+      "color": "#ffe66d"
+    },
+    {
+      "id": "udarnye",
+      "name": "Ударные",
+      "file": "samples/r06-udarnye.wav",
+      "bars": 4,
+      "color": "#c9fff4"
+    }
+  ],
+  "track": "Смузи"
+}

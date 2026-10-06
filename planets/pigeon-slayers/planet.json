@@ -1,0 +1,121 @@
+{
+  "id": "pigeon-slayers",
+  "name": "Pigeon Slayers",
+  "bpm": 130,
+  "trackUrl": "https://pigeonslayers.bandcamp.com/",
+  "texture": "planet.png",
+  "background": "bg.png",
+  "colors": {
+    "accent": "#ff3b3b",
+    "orbit": "#7a7f86",
+    "ray": "#e9ecef",
+    "text": "#f2f2f2"
+  },
+  "samples": [
+    {
+      "id": "bochka",
+      "name": "Бочка",
+      "file": "samples/d01-bochka.wav",
+      "color": "#ff3b3b"
+    },
+    {
+      "id": "sneyr",
+      "name": "Снейр",
+      "file": "samples/d02-sneyr.wav",
+      "color": "#e9ecef"
+    },
+    {
+      "id": "chayna",
+      "name": "Чайна",
+      "file": "samples/d03-chayna.wav",
+      "color": "#ffffff"
+    },
+    {
+      "id": "blast",
+      "name": "Бласт",
+      "file": "samples/d04-blast.wav",
+      "color": "#ff8a80"
+    },
+    {
+      "id": "breykdaun",
+      "name": "Брейкдаун",
+      "file": "samples/d05-breykdaun.wav",
+      "color": "#55d6a0"
+    },
+    {
+      "id": "vizg",
+      "name": "Визг",
+      "file": "samples/d06-vizg.wav",
+      "color": "#8f6bff"
+    },
+    {
+      "id": "golub",
+      "name": "Голубь",
+      "file": "samples/d07-golub.wav",
+      "color": "#9aa0a8"
+    },
+    {
+      "id": "krylya",
+      "name": "Крылья",
+      "file": "samples/d08-krylya.wav",
+      "color": "#c9ced6"
+    },
+    {
+      "id": "groul",
+      "name": "Гроул",
+      "file": "samples/d09-groul.wav",
+      "color": "#5b5f66"
+    },
+    {
+      "id": "het",
+      "name": "Хэт",
+      "file": "samples/d10-het.wav",
+      "color": "#dfe3e8"
+    }
+  ],
+  "rings": [
+    {
+      "id": "breykdaun-riff",
+      "name": "Брейкдаун-рифф",
+      "file": "samples/r01-breykdaun-riff.wav",
+      "bars": 4,
+      "color": "#55d6a0"
+    },
+    {
+      "id": "tremolo",
+      "name": "Тремоло",
+      "file": "samples/r02-tremolo.wav",
+      "bars": 4,
+      "color": "#8f6bff"
+    },
+    {
+      "id": "blast-bit",
+      "name": "Бласт-бит",
+      "file": "samples/r03-blast-bit.wav",
+      "bars": 4,
+      "color": "#ff8a80"
+    },
+    {
+      "id": "groul-dron",
+      "name": "Гроул-дрон",
+      "file": "samples/r04-groul-dron.wav",
+      "bars": 4,
+      "color": "#5b5f66"
+    },
+    {
+      "id": "lid-vizg",
+      "name": "Лид-визг",
+      "file": "samples/r05-lid-vizg.wav",
+      "bars": 4,
+      "color": "#e9ecef"
+    },
+    {
+      "id": "golubinyy-hor",
+      "name": "Голубиный хор",
+      "file": "samples/r06-golubinyy-hor.wav",
+      "bars": 4,
+      "color": "#9aa0a8"
+    }
+  ],
+  "track": "PIGEON CORE"
+}

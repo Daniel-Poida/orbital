@@ -1,0 +1,121 @@
+{
+  "id": "exploration-one",
+  "name": "Exploration One",
+  "bpm": 140,
+  "trackUrl": "https://explorationone.bandcamp.com/",
+  "texture": "planet.png",
+  "background": "bg.png",
+  "colors": {
+    "accent": "#4fd1ff",
+    "orbit": "#4a5a6e",
+    "ray": "#d8f3ff",
+    "text": "#e8f4ff"
+  },
+  "samples": [
+    {
+      "id": "bochka",
+      "name": "Бочка",
+      "file": "samples/d01-bochka.wav",
+      "color": "#4fd1ff"
+    },
+    {
+      "id": "sneyr",
+      "name": "Снейр",
+      "file": "samples/d02-sneyr.wav",
+      "color": "#dfe9f3"
+    },
+    {
+      "id": "het",
+      "name": "Хэт",
+      "file": "samples/d03-het.wav",
+      "color": "#9fb8cc"
+    },
+    {
+      "id": "chayna",
+      "name": "Чайна",
+      "file": "samples/d04-chayna.wav",
+      "color": "#ffffff"
+    },
+    {
+      "id": "chag-niz",
+      "name": "Чаг низ",
+      "file": "samples/d05-chag-niz.wav",
+      "color": "#2f6f9f"
+    },
+    {
+      "id": "chag-verh",
+      "name": "Чаг верх",
+      "file": "samples/d06-chag-verh.wav",
+      "color": "#5ea8d8"
+    },
+    {
+      "id": "skrim-flazholet",
+      "name": "Скрим-флажолет",
+      "file": "samples/d07-skrim-flazholet.wav",
+      "color": "#b8ecff"
+    },
+    {
+      "id": "indastrial-hit",
+      "name": "Индастриал-хит",
+      "file": "samples/d08-indastrial-hit.wav",
+      "color": "#7f8fa0"
+    },
+    {
+      "id": "sab-drop",
+      "name": "Саб-дроп",
+      "file": "samples/d09-sab-drop.wav",
+      "color": "#1f3f5f"
+    },
+    {
+      "id": "glitch",
+      "name": "Глитч",
+      "file": "samples/d10-glitch.wav",
+      "color": "#c0f0ff"
+    }
+  ],
+  "rings": [
+    {
+      "id": "dzhent-riff",
+      "name": "Джент-рифф",
+      "file": "samples/r01-dzhent-riff.wav",
+      "bars": 4,
+      "color": "#4fd1ff"
+    },
+    {
+      "id": "kosmo-pad",
+      "name": "Космо-пад",
+      "file": "samples/r02-kosmo-pad.wav",
+      "bars": 4,
+      "color": "#8fb8ff"
+    },
+    {
+      "id": "lid",
+      "name": "Лид",
+      "file": "samples/r03-lid.wav",
+      "bars": 4,
+      "color": "#d8f3ff"
+    },
+    {
+      "id": "indastrial-dron",
+      "name": "Индастриал-дрон",
+      "file": "samples/r04-indastrial-dron.wav",
+      "bars": 4,
+      "color": "#4a5a6e"
+    },
+    {
+      "id": "arp",
+      "name": "Арп",
+      "file": "samples/r05-arp.wav",
+      "bars": 4,
+      "color": "#9fe8ff"
+    },
+    {
+      "id": "udarnye",
+      "name": "Ударные",
+      "file": "samples/r06-udarnye.wav",
+      "bars": 4,
+      "color": "#6f8090"
+    }
+  ],
+  "track": "A New Way"
+}

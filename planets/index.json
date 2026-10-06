@@ -1,0 +1,29 @@
+{
+  "planets": [
+    {
+      "id": "exploration-one",
+      "name": "Exploration One",
+      "track": "A New Way"
+    },
+    {
+      "id": "pigeon-slayers",
+      "name": "Pigeon Slayers",
+      "track": "PIGEON CORE"
+    },
+    {
+      "id": "canavar-contact",
+      "name": "Canavar Contact",
+      "track": "ARENA"
+    },
+    {
+      "id": "borets-v-pizhame",
+      "name": "Борец в Пижаме",
+      "track": "Смузи"
+    },
+    {
+      "id": "chomachasm",
+      "name": "CHOMACHASM",
+      "track": ""
+    }
+  ]
+}

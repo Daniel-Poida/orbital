@@ -1,0 +1,121 @@
+{
+  "id": "canavar-contact",
+  "name": "Canavar Contact",
+  "bpm": 128,
+  "trackUrl": "https://canavarcontact.bandcamp.com/",
+  "texture": "planet.png",
+  "background": "bg.png",
+  "colors": {
+    "accent": "#ff2d55",
+    "orbit": "#6b2a44",
+    "ray": "#ffd1e0",
+    "text": "#fff0f5"
+  },
+  "samples": [
+    {
+      "id": "808",
+      "name": "808",
+      "file": "samples/d01-808.wav",
+      "color": "#ff2d55"
+    },
+    {
+      "id": "sneyr",
+      "name": "Снейр",
+      "file": "samples/d02-sneyr.wav",
+      "color": "#ffd1e0"
+    },
+    {
+      "id": "het",
+      "name": "Хэт",
+      "file": "samples/d03-het.wav",
+      "color": "#ff8fb1"
+    },
+    {
+      "id": "klep",
+      "name": "Клэп",
+      "file": "samples/d04-klep.wav",
+      "color": "#ffb3c6"
+    },
+    {
+      "id": "stab",
+      "name": "Стаб",
+      "file": "samples/d05-stab.wav",
+      "color": "#ff5c8a"
+    },
+    {
+      "id": "chag",
+      "name": "Чаг",
+      "file": "samples/d06-chag.wav",
+      "color": "#b3003b"
+    },
+    {
+      "id": "sirena",
+      "name": "Сирена",
+      "file": "samples/d07-sirena.wav",
+      "color": "#ff7aa8"
+    },
+    {
+      "id": "rayzer",
+      "name": "Райзер",
+      "file": "samples/d08-rayzer.wav",
+      "color": "#c0c0c0"
+    },
+    {
+      "id": "hey",
+      "name": "Хэй",
+      "file": "samples/d09-hey.wav",
+      "color": "#ffe0ea"
+    },
+    {
+      "id": "lazer",
+      "name": "Лазер",
+      "file": "samples/d10-lazer.wav",
+      "color": "#ffffff"
+    }
+  ],
+  "rings": [
+    {
+      "id": "edm-lid",
+      "name": "EDM-лид",
+      "file": "samples/r01-edm-lid.wav",
+      "bars": 4,
+      "color": "#ff2d55"
+    },
+    {
+      "id": "indastrial-bas",
+      "name": "Индастриал-бас",
+      "file": "samples/r02-indastrial-bas.wav",
+      "bars": 4,
+      "color": "#b3003b"
+    },
+    {
+      "id": "chag-lup",
+      "name": "Чаг-луп",
+      "file": "samples/r03-chag-lup.wav",
+      "bars": 4,
+      "color": "#ff5c8a"
+    },
+    {
+      "id": "pamping-pad",
+      "name": "Пампинг-пад",
+      "file": "samples/r04-pamping-pad.wav",
+      "bars": 4,
+      "color": "#ff8fb1"
+    },
+    {
+      "id": "dram-mashina",
+      "name": "Драм-машина",
+      "file": "samples/r05-dram-mashina.wav",
+      "bars": 4,
+      "color": "#ffd1e0"
+    },
+    {
+      "id": "arp",
+      "name": "Арп",
+      "file": "samples/r06-arp.wav",
+      "bars": 4,
+      "color": "#ffb3c6"
+    }
+  ],
+  "track": "ARENA"
+}
