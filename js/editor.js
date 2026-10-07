@@ -164,6 +164,8 @@ const Editor = (() => {
 
       <section class="esec actions-col">
         <button type="button" class="btn primary" data-act="apply">Проверить в сцене</button>
+        <button type="button" class="btn" data-act="set-preset">Сделать текущий бит стартовым</button>
+        <p class="lbl">${d.preset ? 'Стартовый бит задан: с ним планета откроется у слушателя.' : 'Стартовый бит не задан: планета откроется с пустыми орбитами.'}</p>
         <button type="button" class="btn" data-act="zip">Скачать ZIP планеты</button>
         <button type="button" class="btn" data-act="from-current">Взять за основу текущую планету</button>
         <button type="button" class="btn danger" data-act="reset">Очистить черновик</button>
@@ -218,7 +220,7 @@ const Editor = (() => {
     return {
       id: d.id || 'draft', name: d.name || 'Планета', track: d.track || '', bpm: +d.bpm || 110, trackUrl: d.trackUrl,
       texture: d.texture ? urlOf(d.texture) : null, background: d.background ? urlOf(d.background) : null,
-      colors: Object.assign({}, d.colors), samples, rings,
+      colors: Object.assign({}, d.colors), samples, rings, preset: d.preset || null,
     };
   }
 
@@ -254,6 +256,7 @@ const Editor = (() => {
       folder.file(file, r.file.blob);
       cfg.rings.push({ id: base, name: r.name || 'Кольцо ' + (i + 1), file, bars: +r.bars || 4, color: r.color });
     });
+    if (d.preset) cfg.preset = d.preset;
     folder.file('planet.json', JSON.stringify(cfg, null, 2));
     folder.file('README.txt', `Папку "${id}" положить в planets/ рядом с остальными.\nВ planets/index.json добавить строку:\n\n    { "id": "${id}", "name": ${JSON.stringify(d.name)}, "track": ${JSON.stringify(d.track || '')} }\n`);
     const blob = await zip.generateAsync({ type: 'blob' });
@@ -273,6 +276,7 @@ const Editor = (() => {
     const c = cur.cfg;
     d.id = slug(c.id + '-copy'); d.name = c.name; d.track = c.track || ''; d.bpm = c.bpm || 110; d.trackUrl = c.trackUrl || '';
     d.colors = Object.assign(d.colors, c.colors || {});
+    d.preset = c.preset || null;
     if (c.texture) d.texture = await grab(c.texture);
     if (c.background) d.background = await grab(c.background);
     for (const s of c.samples) d.samples.push({ name: s.name, color: s.color, file: await grab(s.file) });
@@ -304,6 +308,7 @@ const Editor = (() => {
         case 'add-sample': draft.samples.push({ name: '', color: PALETTE[draft.samples.length % PALETTE.length], file: null }); scheduleSave(); render(); break;
         case 'add-ring': draft.rings.push({ name: '', color: PALETTE[(draft.rings.length + 5) % PALETTE.length], bars: 4, file: null }); scheduleSave(); render(); break;
         case 'apply': await apply(); break;
+        case 'set-preset': draft.preset = Orbital.currentBeat(); scheduleSave(); render(); Orbital.hint('Текущий бит сохранён как стартовый', 1800); break;
         case 'zip': await exportZip(); break;
         case 'from-current': await fromCurrent(); break;
         case 'reset': if (confirm('Удалить черновик вместе с файлами?')) { draft = blank(); scheduleSave(); render(); } break;

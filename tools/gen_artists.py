@@ -539,6 +539,9 @@ def artist_planets():
     return P, rng
 
 
+PRESETS = {"exploration-one": {"o": "0--0--0---0-0---.----1-------1---.2-2-2-2-2-2-2-2-.4-------5---4---", "r": [0, 1]}, "pigeon-slayers": {"o": "0---0-----0---0-.--------1-------.2-------2-------.------6-------5-", "r": [0]}, "canavar-contact": {"o": "0---0---0---0---.----3-------3---.--2---2---2---2-.4-----4-----4---", "r": [0, 1]}, "borets-v-pizhame": {"o": "0---0---0---0-0-.----1-------1---.2-2-2-2-2-2-2-2-", "r": [0, 2]}, "chomachasm": {"o": "0-----0-0-------.--------1-------.2---2---2---2---.9---------------", "r": [0, 1]}}
+
+
 def slug(s):
     tr = {'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e', 'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'c', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'}
     out = ''.join(tr.get(c, c) for c in s.lower())
@@ -558,6 +561,10 @@ def main():
             'id': p['id'], 'name': p['name'], 'artist': p['artist'], 'bpm': p['bpm'], 'trackUrl': p['trackUrl'],
             'texture': 'planet.png', 'background': 'bg.png', 'colors': p['colors'], 'samples': [], 'rings': [],
         }
+        if p['id'] in PRESETS:
+            cfg['preset'] = PRESETS[p['id']]
+        cfg['track'] = ''
+        cfg.pop('artist', None)
         for i, (name, color, data) in enumerate(p['samples']):
             f = f'samples/d{i + 1:02d}-{slug(name)}.wav'
             write_wav(os.path.join(d, f), data)

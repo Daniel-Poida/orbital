@@ -23,6 +23,7 @@ const Scene = (() => {
   let glowTex = null;
   let planetHalo = null;
   let rimLight = null;
+  let hover = null;          // подсветка точки орбиты под пальцем
 
   // Мягкая радиальная текстура для свечений (рисуется один раз на canvas).
   function makeGlowTexture() {
@@ -113,6 +114,17 @@ const Scene = (() => {
     starGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, transparent: true, opacity: 0.7 }));
     scene.add(stars);
+
+    // Маркер цели при перетаскивании: светящееся кольцо + ореол.
+    hover = new THREE.Group();
+    const hRing = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.38, 40),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+    hRing.rotation.x = -Math.PI / 2;
+    const hGlow = glowSprite(0xffffff, 1.6, 0.55);
+    hover.add(hRing, hGlow);
+    hover.userData = { ring: hRing, glow: hGlow };
+    hover.visible = false;
+    scene.add(hover);
 
     window.addEventListener('resize', resize);
     resize();
@@ -233,6 +245,23 @@ const Scene = (() => {
     satObjs.set(key, m);
   }
 
+  function setHover(o, s, color) {
+    if (o == null || o < 0 || o >= orbitCount) { hover.visible = false; return; }
+    const a = s / STEPS * Math.PI * 2, r = orbitRadius(o);
+    hover.position.set(Math.sin(a) * r, 0.01, -Math.cos(a) * r);
+    hover.userData.ring.material.color.set(color || '#ffffff');
+    hover.userData.glow.material.color.set(color || '#ffffff');
+    hover.visible = true;
+  }
+
+  // Экранные координаты точки сцены (для подсказок поверх 3D).
+  function screenOf(x, y, z) {
+    const v = new THREE.Vector3(x, y, z).project(camera);
+    return { x: (v.x + 1) / 2 * window.innerWidth, y: (1 - v.y) / 2 * window.innerHeight };
+  }
+  function planetScreen() { return screenOf(0, 0, 0); }
+  function stepScreen(o, s) { const a = s / STEPS * Math.PI * 2, r = orbitRadius(o); return screenOf(Math.sin(a) * r, 0, -Math.cos(a) * r); }
+
   function clearSatellites() { for (const m of satObjs.values()) satGroup.remove(m); satObjs.clear(); }
 
   function flash(o, s) {
@@ -342,9 +371,10 @@ const Scene = (() => {
       m.material.emissiveIntensity += (0.35 - m.material.emissiveIntensity) * 0.15;
       return Math.abs(m.scale.x - 1) > 0.01;
     });
+    if (hover.visible) { const k = 1 + 0.12 * Math.sin(t / 120); hover.userData.ring.scale.setScalar(k); }
     renderer.render(scene, camera);
     requestAnimationFrame(loop);
   }
 
-  return { init, setPlanet, setZoom, getZoom, panBy, resetView, setOrbitCount, setSatellite, clearSatellites, setRing, setRingLevel, setEnergy, flash, setProgress, setPlaying, pick, setBottomPad, STEPS, MAX_ORBITS, MAX_RINGS };
+  return { init, setPlanet, setZoom, getZoom, panBy, resetView, setOrbitCount, setSatellite, clearSatellites, setRing, setRingLevel, setEnergy, flash, setHover, planetScreen, stepScreen, setProgress, setPlaying, pick, setBottomPad, STEPS, MAX_ORBITS, MAX_RINGS };
 })();

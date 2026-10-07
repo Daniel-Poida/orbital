@@ -129,6 +129,11 @@ def main():
             warnings.append(f'луп «{name}»: {sec:.3f} с, а {bars} т. при {bpm} BPM = {bars * bar:.3f} с')
         cfg['rings'].append({'id': slug(name), 'name': name, 'file': out, 'bars': bars, 'color': old_colors.get(name, PALETTE[(i + 5) % len(PALETTE)])})
 
+    # Стартовый бит переносим со старой планеты, если число звуков не уменьшилось.
+    if old.get('preset'):
+        mx = max((int(c, 36) for c in old['preset'].get('o', '').replace('.', '').replace('-', '')), default=-1)
+        if mx < len(cfg['samples']):
+            cfg['preset'] = old['preset']
     if not cfg['samples']:
         sys.exit('В папке drums нет звуков')
     with open(os.path.join(dst, 'planet.json'), 'w', encoding='utf-8') as fh:
